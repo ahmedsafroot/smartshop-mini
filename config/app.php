@@ -1,9 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
-use Smpita\TypeAs\TypeAs;
-
 return [
 
     /*
@@ -105,7 +101,7 @@ return [
 
     'previous_keys' => [
         ...array_filter(
-            explode(',', TypeAs::string(env('APP_PREVIOUS_KEYS', '')))
+            explode(',', (string) env('APP_PREVIOUS_KEYS', '')),
         ),
     ],
 

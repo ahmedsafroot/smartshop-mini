@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Livewire\Settings;
 
 use Exception;
@@ -10,14 +8,13 @@ use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Actions\EnableTwoFactorAuthentication;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
-use Smpita\TypeAs\TypeAs;
 use Symfony\Component\HttpFoundation\Response;
 
-#[Layout('components.layouts.app')]
+#[Title('Two-factor authentication')]
 class TwoFactor extends Component
 {
     #[Locked]
@@ -46,11 +43,11 @@ class TwoFactor extends Component
     {
         abort_unless(Features::enabled(Features::twoFactorAuthentication()), Response::HTTP_FORBIDDEN);
 
-        if (Fortify::confirmsTwoFactorAuthentication() && is_null(user()->two_factor_confirmed_at)) {
-            $disableTwoFactorAuthentication(user());
+        if (Fortify::confirmsTwoFactorAuthentication() && is_null(auth()->user()->two_factor_confirmed_at)) {
+            $disableTwoFactorAuthentication(auth()->user());
         }
 
-        $this->twoFactorEnabled = user()->hasEnabledTwoFactorAuthentication();
+        $this->twoFactorEnabled = auth()->user()->hasEnabledTwoFactorAuthentication();
         $this->requiresConfirmation = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
     }
 
@@ -59,15 +56,32 @@ class TwoFactor extends Component
      */
     public function enable(EnableTwoFactorAuthentication $enableTwoFactorAuthentication): void
     {
-        $enableTwoFactorAuthentication(user());
+        $enableTwoFactorAuthentication(auth()->user());
 
         if (! $this->requiresConfirmation) {
-            $this->twoFactorEnabled = user()->hasEnabledTwoFactorAuthentication();
+            $this->twoFactorEnabled = auth()->user()->hasEnabledTwoFactorAuthentication();
         }
 
         $this->loadSetupData();
 
         $this->showModal = true;
+    }
+
+    /**
+     * Load the two-factor authentication setup data for the user.
+     */
+    private function loadSetupData(): void
+    {
+        $user = auth()->user();
+
+        try {
+            $this->qrCodeSvg = $user?->twoFactorQrCodeSvg();
+            $this->manualSetupKey = decrypt($user->two_factor_secret);
+        } catch (Exception) {
+            $this->addError('setupData', 'Failed to fetch setup data.');
+
+            $this->reset('qrCodeSvg', 'manualSetupKey');
+        }
     }
 
     /**
@@ -93,7 +107,7 @@ class TwoFactor extends Component
     {
         $this->validate();
 
-        $confirmTwoFactorAuthentication(user(), $this->code);
+        $confirmTwoFactorAuthentication(auth()->user(), $this->code);
 
         $this->closeModal();
 
@@ -115,7 +129,7 @@ class TwoFactor extends Component
      */
     public function disable(DisableTwoFactorAuthentication $disableTwoFactorAuthentication): void
     {
-        $disableTwoFactorAuthentication(user());
+        $disableTwoFactorAuthentication(auth()->user());
 
         $this->twoFactorEnabled = false;
     }
@@ -136,20 +150,18 @@ class TwoFactor extends Component
         $this->resetErrorBag();
 
         if (! $this->requiresConfirmation) {
-            $this->twoFactorEnabled = user()->hasEnabledTwoFactorAuthentication();
+            $this->twoFactorEnabled = auth()->user()->hasEnabledTwoFactorAuthentication();
         }
     }
 
     /**
      * Get the current modal configuration state.
-     *
-     * @return array<array-key, string>
      */
     public function getModalConfigProperty(): array
     {
         if ($this->twoFactorEnabled) {
             return [
-                'title' => __('Two-Factor Authentication Enabled'),
+                'title' => __('Two-factor authentication enabled'),
                 'description' => __('Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.'),
                 'buttonText' => __('Close'),
             ];
@@ -157,33 +169,16 @@ class TwoFactor extends Component
 
         if ($this->showVerificationStep) {
             return [
-                'title' => __('Verify Authentication Code'),
+                'title' => __('Verify authentication code'),
                 'description' => __('Enter the 6-digit code from your authenticator app.'),
                 'buttonText' => __('Continue'),
             ];
         }
 
         return [
-            'title' => __('Enable Two-Factor Authentication'),
+            'title' => __('Enable two-factor authentication'),
             'description' => __('To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app.'),
             'buttonText' => __('Continue'),
         ];
-    }
-
-    /**
-     * Load the two-factor authentication setup data for the user.
-     */
-    private function loadSetupData(): void
-    {
-        $user = user();
-
-        try {
-            $this->qrCodeSvg = $user->twoFactorQrCodeSvg();
-            $this->manualSetupKey = TypeAs::string(decrypt($user->two_factor_secret ?? ''));
-        } catch (Exception) {
-            $this->addError('setupData', 'Failed to fetch setup data.');
-
-            $this->reset('qrCodeSvg', 'manualSetupKey');
-        }
     }
 }

@@ -1,20 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Livewire\Settings\TwoFactor;
 
 use Exception;
 use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use Smpita\TypeAs\TypeAs;
 
 class RecoveryCodes extends Component
 {
-    /**
-     * @var array<array-key, string>
-     */
     #[Locked]
     public array $recoveryCodes = [];
 
@@ -31,7 +25,7 @@ class RecoveryCodes extends Component
      */
     public function regenerateRecoveryCodes(GenerateNewRecoveryCodes $generateNewRecoveryCodes): void
     {
-        $generateNewRecoveryCodes(user());
+        $generateNewRecoveryCodes(auth()->user());
 
         $this->loadRecoveryCodes();
     }
@@ -41,13 +35,11 @@ class RecoveryCodes extends Component
      */
     private function loadRecoveryCodes(): void
     {
-        $user = user();
+        $user = auth()->user();
 
         if ($user->hasEnabledTwoFactorAuthentication() && $user->two_factor_recovery_codes) {
             try {
-                /** @var array<array-key, string> */
-                $recoveryCodes = TypeAs::array(json_decode(TypeAs::string(decrypt($user->two_factor_recovery_codes)), true));
-                $this->recoveryCodes = $recoveryCodes;
+                $this->recoveryCodes = json_decode(decrypt($user->two_factor_recovery_codes), true);
             } catch (Exception) {
                 $this->addError('recoveryCodes', 'Failed to load recovery codes');
 

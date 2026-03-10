@@ -1,13 +1,21 @@
 <?php
 
-declare(strict_types=1);
+namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-test('confirm password screen can be rendered', function () {
-    $user = User::factory()->create();
+class PasswordConfirmationTest extends TestCase
+{
+    use RefreshDatabase;
 
-    $response = $this->actingAs($user)->get(route('password.confirm'));
+    public function test_confirm_password_screen_can_be_rendered(): void
+    {
+        $user = User::factory()->create();
 
-    $response->assertStatus(200);
-});
+        $response = $this->actingAs($user)->get(route('password.confirm'));
+
+        $response->assertOk();
+    }
+}

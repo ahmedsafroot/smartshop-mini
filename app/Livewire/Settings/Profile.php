@@ -1,18 +1,20 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Livewire\Settings;
 
-use App\Models\User;
+use App\Concerns\ProfileValidationRules;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Validation\Rule;
-use Livewire\Attributes\Layout;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Layout('components.layouts.app')]
+#[Title('Profile settings')]
 class Profile extends Component
 {
+    use ProfileValidationRules;
+
     public string $name = '';
 
     public string $email = '';
@@ -22,8 +24,8 @@ class Profile extends Component
      */
     public function mount(): void
     {
-        $this->name = user()->name;
-        $this->email = user()->email;
+        $this->name = Auth::user()->name;
+        $this->email = Auth::user()->email;
     }
 
     /**
@@ -31,21 +33,9 @@ class Profile extends Component
      */
     public function updateProfileInformation(): void
     {
-        $user = user();
+        $user = Auth::user();
 
-        /** @var array<string, mixed> */
-        $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($user->id),
-            ],
-        ]);
+        $validated = $this->validate($this->profileRules($user->id));
 
         $user->fill($validated);
 
@@ -63,7 +53,7 @@ class Profile extends Component
      */
     public function resendVerificationNotification(): void
     {
-        $user = user();
+        $user = Auth::user();
 
         if ($user->hasVerifiedEmail()) {
             $this->redirectIntended(default: route('dashboard', absolute: false));
@@ -74,5 +64,18 @@ class Profile extends Component
         $user->sendEmailVerificationNotification();
 
         Session::flash('status', 'verification-link-sent');
+    }
+
+    #[Computed]
+    public function hasUnverifiedEmail(): bool
+    {
+        return Auth::user() instanceof MustVerifyEmail && ! Auth::user()->hasVerifiedEmail();
+    }
+
+    #[Computed]
+    public function showDeleteUser(): bool
+    {
+        return ! Auth::user() instanceof MustVerifyEmail
+            || (Auth::user() instanceof MustVerifyEmail && Auth::user()->hasVerifiedEmail());
     }
 }
