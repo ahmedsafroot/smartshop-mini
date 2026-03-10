@@ -12,7 +12,8 @@ class CartController extends Controller
     public function index(): View
     {
         $cart = session()->get('cart')??[];
-        return view('cart.index', compact('cart'));
+        $canCheckout=!empty($cart);
+        return view('cart.index', compact('cart','canCheckout'));
     }
 
     public function add($id): RedirectResponse

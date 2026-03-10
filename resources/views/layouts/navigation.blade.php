@@ -15,7 +15,24 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    <!-- Cart Link -->
+                    @php
+                        $cart = session('cart', []);
+                        $cartCount = collect($cart)->sum('quantity');
+                    @endphp
+
+                    <a href="{{ route('cart.index') }}"
+                       class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition">
+                        Cart
+                        @if($cartCount > 0)
+                            <span class="ml-1 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                           {{ $cartCount }}
+                         </span>
+                        @endif
+                    </a>
                 </div>
+
             </div>
 
             <!-- Settings Dropdown -->

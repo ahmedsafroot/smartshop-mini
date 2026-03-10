@@ -14,11 +14,12 @@
             </form>
         </div>
     @endforeach
-
+    @if($canCheckout)
     <form method="POST" action="{{ route('cart.checkout') }}" class="mt-6">
         @csrf
         <button type="submit" class="bg-green-500 text-white px-4 py-2">Checkout</button>
     </form>
+    @endif
 
     @if(session('success'))
         <p class="mt-4 text-green-600">{{ session('success') }}</p>
