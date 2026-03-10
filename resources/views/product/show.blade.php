@@ -20,23 +20,25 @@
 
     <!-- Recommendations -->
     <h2 class="text-2xl font-bold mt-10 mb-4 text-gray-800">You might also like</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <div class="grid grid-cols-3 gap-4 p-6">
         @foreach($recommended as $rec)
-            <div class="border rounded-lg shadow p-4 bg-white flex flex-col">
-                <h3 class="font-semibold text-lg text-gray-800">{{ $rec->name }}</h3>
-                <span class="text-blue-600 font-bold mb-3">${{ $rec->price }}</span>
+            <div class="border p-4">
+                <img src="/images/{{ $rec->image }}" alt="{{ $rec->name }}" class="mb-2">
+                <h3 class="font-bold">{{ $rec->name }}</h3>
+                <p class="text-gray-600">{{ $rec->description }}</p>
+                <span class="block mb-2">${{ $rec->price }}</span>
 
-                <!-- View Button -->
+                <!-- View link -->
                 <a href="{{ route('product.show', $rec->id) }}"
-                   class="mb-2 inline-block bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition text-center">
+                   class="text-blue-500 hover:underline mr-4">
                     View
                 </a>
 
-                <!-- Add to Cart Button -->
-                <form method="POST" action="{{ route('cart.add', $rec->id) }}">
+                <!-- Add to Cart form -->
+                <form action="{{ route('cart.add', $rec->id) }}" method="POST" class="inline">
                     @csrf
                     <button type="submit"
-                            class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+                            class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
                         Add to Cart
                     </button>
                 </form>

@@ -12,11 +12,11 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        $viewed = session()->get('viewed')??[];
-        array_unshift($viewed, $product->id);
-        session()->put('viewed', array_slice($viewed, 0, 3));
+        $viewedIds = session()->get('viewed')??[];
+        array_unshift($viewedIds, $product->id);
+        session()->put('viewed', array_slice($viewedIds, 0, 3));
 
-        $recommended = $recommendationService->getRecommendations($viewed);
+        $recommended = $recommendationService->getRecommendations($viewedIds);
         return view('product.show', compact('product', 'recommended'));
     }
 }

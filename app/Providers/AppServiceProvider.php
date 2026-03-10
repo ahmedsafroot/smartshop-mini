@@ -15,7 +15,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $driver = config('recommendation.driver');
+        $map = config('recommendation.drivers');
+
+        $this->app->bind(
+            \App\Contracts\RecommendationDriver::class,
+            $map[$driver] ?? $map['gemini']
+        );
     }
 
     /**

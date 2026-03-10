@@ -11,8 +11,8 @@ class HomeController extends Controller
     public function index(RecommendationService $recommendationService): View
     {
         $products = Product::take(20)->get();
-        $viewed = session()->get('viewed')??[];
-        $recommended = $recommendationService->getRecommendations($viewed);
+        $viewedIds = session()->get('viewed')??[];
+        $recommended = $recommendationService->getRecommendations($viewedIds);
         return view('home', compact('products', 'recommended'));
     }
 }

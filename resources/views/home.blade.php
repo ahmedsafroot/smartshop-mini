@@ -45,7 +45,7 @@
                 <form action="{{ route('cart.add', $rec->id) }}" method="POST" class="inline">
                     @csrf
                     <button type="submit"
-                            class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
+                            class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
                         Add to Cart
                     </button>
                 </form>
