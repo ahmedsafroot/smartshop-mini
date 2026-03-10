@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 class RecommendationService
 {
+    //integrated with Gemini
     public function getRecommendations($viewedIds)
     {
         // Fetch the actual product models
