@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Http\Request;
+use App\Services\RecommendationService;
+use Illuminate\Contracts\View\View;
 
 class ProductController extends Controller
 {
-    public function show($id)
+    public function show($id,RecommendationService $recommendationService): View
     {
         $product = Product::findOrFail($id);
 
@@ -15,8 +16,7 @@ class ProductController extends Controller
         array_unshift($viewed, $product->id);
         session()->put('viewed', array_slice($viewed, 0, 3));
 
-        $recommended = Product::inRandomOrder()->take(3)->get();
-
+        $recommended = $recommendationService->getRecommendations($viewed);
         return view('product.show', compact('product', 'recommended'));
     }
 }

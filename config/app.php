@@ -127,6 +127,7 @@ return [
         'email'=>env('USER_EMAIL','test@test.com'),
         'name'=>env('USER_NAME','test'),
         'password'=>env('USER_PASSWORD','P@ssw0rd@1234')
-    ]
+    ],
+    'gemini_api_key'=>env('GEMINI_API_KEY','your_app_key'),
 
 ];
